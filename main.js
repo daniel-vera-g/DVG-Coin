@@ -16,12 +16,23 @@ class Block{
 		this.previousHash = previousHash;
 		// hash property to save hash of current block 
 		this.hash = this.calculateHash(); 
+		this.nonce = 0;
 	}
 
 	// function to calculate hash through taking properties of Block and runn it through hahs function
 	calculateHash(){
 		// return sha256 as hash function
-		return SHA256(this.index + this.previousHash + this.timestamp + JSON.stringify(this.data)).toString();
+		return SHA256(this.index + this.previousHash + this.timestamp + JSON.stringify(this.data) + this.nonce).toString();
+	}
+
+	//method to set mining difficulty 
+	mineBlock(difficulty){
+		while (this.hash.substring(0, difficulty) !== Array(difficulty + 1).join("0")) {
+			this.nonce++;
+			this.hash = this.calculateHash();
+		}
+
+		console.log('Block mined: ' + this.hash);	
 	}
 }
 
@@ -34,6 +45,7 @@ class Blockchain{
 	constructor(){
 		// array of blocks (beginning with the genesisBlock)
 		this.chain = [this.createGenesisBlock()];
+		this.difficulty = 6;
 	}
 
 	/**
@@ -52,7 +64,7 @@ class Blockchain{
 	//adds a new Block to the exisiting Blockchain
 	addBlock(newBlock){
 		newBlock.previousHash = this.getLatestBlock().hash;
-		newBlock.hash = newBlock.calculateHash();
+		newBlock.mineBlock(this.difficulty);
 		this.chain.push(newBlock);
 	}
 
@@ -82,16 +94,9 @@ class Blockchain{
 
 //initiate Blockchain
 let dvgCoin = new Blockchain();
+
+console.log('Mining Block 1...');
 dvgCoin.addBlock(new Block(1, "18.11.17", {amount: 4}));
+
+console.log('Mining Block 2...');
 dvgCoin.addBlock(new Block(2, "18.11.17", {amount: 6}));
-
-//show to the user if Chain is valid
-console.log('Is Chain valid ?  ' + dvgCoin.isChainValid());
-
-//test if chain is valid after change
-dvgCoin.chain[1].data = {amount: 100};
-
-//show to the user if Chain is valid
-console.log('Is Chain valid ?  ' + dvgCoin.isChainValid());
-
-// console.log(JSON.stringify(dvgCoin, null, 4));
