@@ -9,7 +9,7 @@ class Block{
 	@data data to transfer f.ex money exchanged
 	@previousHash String that contains hash previous block --> ensures integrity of blockchain
 	*/
-	constructer(index, timestamp, data, previusHash = ""){
+	constructor(index, timestamp, data, previousHash = ""){
 		this.index = index;
 		this.timestamp = timestamp;
 		this.data = data;
@@ -31,9 +31,9 @@ class Blockchain{
 	/**
 	constructer responsible to initialize Blockchain
 	*/
-	constructer(){
+	constructor(){
 		// array of blocks (beginning with the genesisBlock)
-		this.chain = [];
+		this.chain = [this.createGenesisBlock()];
 	}
 
 	/**
@@ -45,11 +45,53 @@ class Blockchain{
 	}
 
 	//returns latest Block in chain
-	getLatestBlock(){
-		this.chain = 
+	 getLatestBlock() {
+        return this.chain[this.chain.length - 1];
+    }
+
+	//adds a new Block to the exisiting Blockchain
+	addBlock(newBlock){
+		newBlock.previousHash = this.getLatestBlock().hash;
+		newBlock.hash = newBlock.calculateHash();
+		this.chain.push(newBlock);
 	}
 
-	addNewBlock(new){
+	//verify integrity of Blockchain through looping over entire chain
+	isChainValid(){
+		for(var i = 1; i < this.chain.length; i++){
+			const currentBlock = this.chain[i];
+			const previousBlock = this.chain[i -1];
 
+			//check if chain is valid
+
+			//check if the hash is the same
+			if (currentBlock.hash !== currentBlock.calculateHash()) {
+				return false;
+			}
+
+			// check if block links to a correct previous block 
+			if (currentBlock.previousHash !== previousBlock.hash) {
+				return false;
+			}
+
+			//if nothing takes place chain is valid
+			return true;
+		}
 	}
 }
+
+//initiate Blockchain
+let dvgCoin = new Blockchain();
+dvgCoin.addBlock(new Block(1, "18.11.17", {amount: 4}));
+dvgCoin.addBlock(new Block(2, "18.11.17", {amount: 6}));
+
+//show to the user if Chain is valid
+console.log('Is Chain valid ?  ' + dvgCoin.isChainValid());
+
+//test if chain is valid after change
+dvgCoin.chain[1].data = {amount: 100};
+
+//show to the user if Chain is valid
+console.log('Is Chain valid ?  ' + dvgCoin.isChainValid());
+
+// console.log(JSON.stringify(dvgCoin, null, 4));
